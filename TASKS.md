@@ -1,6 +1,6 @@
 # TASKS — open-cohort-catalog
 
-> Status: Draft · Version: 0.1.0 · Last updated: 2026-06-28 · Owner: TBD (maintainer) · Lane: donated
+> Status: Draft · Version: 0.2.0 · Last updated: 2026-06-29 · Owner: TBD (maintainer) · Lane: donated
 
 ## How these tasks map to Elyos
 
@@ -45,22 +45,35 @@ asserted field is **source-cited**; no medical advice (patient-facing = high ris
 | open-cohort-catalog-gate-003 | Access-tier + license + PII triage checklist (blocking gate) | design-spec | small | medium | document | schema-001 | Access/License/PII |
 | open-cohort-catalog-validator-004 | Schema validator + citation/link resolver (golden fixtures, CI) | code | medium | low | pr | schema-001 | Technical |
 | open-cohort-catalog-exclude-005 | Seed the excluded-resources register (dbGaP/EGA/biobanks, pointer-only) | writing | small | medium | document | gate-003 | Access/License/PII |
+| open-cohort-catalog-boundary-027 | Sibling boundary + shared access-tier vocabulary / schema-contract doc | design-spec | small | low | document | schema-001 | Maintainer |
 | open-cohort-catalog-outreach-006 | Adopter/steward outreach + candidate cohort shortlist | research | small | low | document | — | Steward |
 | open-cohort-catalog-pilot-007 | End-to-end index one pilot open cohort (DepMap or GDC open-tier TCGA) | data | medium | medium | dataset | schema-001, gate-003, validator-004, reviewer-002 | Access/License/PII, Technical |
 
 **Acceptance criteria — key tasks**
 
 - **schema-001 (canonical schema + taxonomy + rights model)**
-  - [ ] JSON Schema + TS types define every required field from PLAN §6 (id, name, custodian,
-        hostingRepository, cancerTypes[] with OncoTree/NCIt/ICD-O-3, aggregateCounts, assayTypes[],
-        accessTier, license{...rights booleans}, accessTerms, deIdentification, provenance,
-        fieldProvenance[], governanceFlags[], crossRefs[], completenessScore).
+  - [ ] JSON Schema + TS types define every required field from PLAN §6 (id, name, **entryType**,
+        **identityKeys**, custodian, **primaryHostingRepository, hostingLocations[]**, cancerTypes[]
+        with OncoTree/NCIt/ICD-O-3, aggregateCounts, **generationContext**, assayTypes[], accessTier,
+        license{...rights booleans}, accessTerms, deIdentification, provenance, fieldProvenance[],
+        governanceFlags[], crossRefs[], **recordState**, completenessScore).
+  - [ ] **`entryType` is an enum** `patient-cohort | population-statistics | cell-model-collection |
+        molecular-dataset`, and **`aggregateCounts` shape is conditional on it** (cell-model →
+        cellLines/models; population-statistics → statisticalUniverse; never forces a "patients" count
+        on a non-patient entry).
+  - [ ] **Cross-repository identity / dedup is enforced**: `identityKeys` (primary custodian +
+        program/accession + generation scope) yield **one record per distinct cohort**; the same cohort
+        in multiple portals is recorded via `hostingLocations[] {repository, url, isMirror}`, never as
+        multiple records.
   - [ ] `accessTier` is an enum `OPEN | OPEN-AGGREGATE | REGISTERED-OPEN | NON-COMMERCIAL | CONTROLLED`;
         only the first three are valid in a *published* record (CONTROLLED/NON-COMMERCIAL rejected by
         the publish linter).
   - [ ] Each `license` rights boolean (permitsReuse/permitsDerivatives/commercialUseAllowed/
         redistributionAllowed/attributionRequired/shareAlike) is required and must reference a
-        `fieldProvenance` entry; "unknown" is never serialized as `true`.
+        `fieldProvenance` entry; "unknown" is never serialized as `true`. **`redistributionAllowed:
+        false` is a valid index entry** (index ≠ redistribute) and must not be rejected on that basis.
+  - [ ] `recordState` enum `current | termsChangedSinceSnapshot | underReverification` exists as a
+        first-class field for drift (set by drift-017, not just a maintenance ticket).
   - [ ] Schema forbids any per-patient / row-level / quasi-identifier field — catalog is cohort-level only.
   - [ ] Output licensed CC-BY-4.0 (metadata model doc); commit DCO signed-off.
 
@@ -98,11 +111,21 @@ asserted field is **source-cited**; no medical advice (patient-facing = high ris
   - [ ] Validator + citation resolver green in CI; `outputLicense: CC-BY-4.0`; deliverable is metadata,
         never the cohort data.
 
+- **boundary-027 (sibling boundary + shared vocabulary contract)**
+  - [ ] Written boundary differentiating this project (breadth / access-tier + license layer) from
+        `cancer-dataset-datasheets` (depth), `ewing-open-data-catalog` (disease vertical), and
+        `cancer-data-dictionaries` (variable-level), with the explicit rule that the siblings **consume**
+        this project's access-tier vocabulary + schema contract rather than inventing their own.
+  - [ ] Defines the shared access-tier enum + record-`id` reference contract the siblings reuse;
+        `outputLicense: CC-BY-4.0`; DCO signed-off.
+
 **M0 Definition of Done:** Access/License/PII reviewer named (blocking role filled before pilot
-review); canonical schema + access-tier taxonomy + license-rights model + gate checklist published;
-validator + citation resolver green in CI with synthetic golden fixtures; excluded-resources register
-seeded with the controlled set; **one** pilot open cohort fully indexed end-to-end (gate-passed,
-fully cited, completeness ≥ 90/100); ≥ 1 adopter/steward outreach thread opened.
+review); canonical schema (incl. `entryType`, identity/dedup, conditional `aggregateCounts`,
+`recordState`) + access-tier taxonomy + license-rights model + gate checklist published; sibling
+boundary + shared-vocabulary contract drafted; validator + citation resolver green in CI with synthetic
+golden fixtures; excluded-resources register seeded with the controlled set (incl. TCGA-controlled/
+germline, GTEx, TOPMed); **one** pilot open cohort fully indexed end-to-end (gate-passed, fully cited,
+completeness ≥ 90/100); ≥ 1 adopter/steward outreach thread opened.
 
 ---
 
@@ -126,10 +149,14 @@ fully cited, completeness ≥ 90/100); ≥ 1 adopter/steward outreach thread ope
   - [ ] **Must be decided/merged before `triage-009` runs** so triage applies a fixed rule.
 
 - **triage-009 (triage 10 candidates)**
-  - [ ] Ten cohorts evaluated with a committed `gates/<cohort-id>.json` each (PASS/FLAG/EXCLUDE +
-        rationale), applying the access-tier table and `policy-nc-034`.
+  - [ ] Ten **distinct** cohorts (deduped per the §6 identity rule — a cohort appearing in multiple
+        portals counts once) evaluated with a committed `gates/<cohort-id>.json` each (PASS/FLAG/EXCLUDE
+        + rationale), applying the access-tier table and `policy-nc-034`. Candidate pool includes
+        cBioPortal public studies (deduped against GDC/Synapse appearances).
   - [ ] Each PASS records license id/URL/snapshot and the rights booleans with cited clauses; each
         FLAG/EXCLUDE records the disqualifying reason (controlled tier, undocumented de-id, NC terms).
+  - [ ] **Every `REGISTERED-OPEN` or `mixed-tier` candidate gets a mandatory second Access/License/PII
+        sign-off** (100%, not sampled) before PASS.
   - [ ] Any controlled/identifiable candidate is EXCLUDED and routed to the excluded-resources register;
         no controlled resource is given a record.
 
@@ -175,16 +202,29 @@ adopter/steward **or** an honest "not yet secured" with blockers surfaced.
   - [ ] CI **blocks merge** of any record with `accessTier: CONTROLLED`/`NON-COMMERCIAL` (unless a
         governance decision ref is attached per `policy-nc-034`), any rights boolean without
         `fieldProvenance`, any `OPEN` record with `duaRequired: true`, or any unresolved citation.
+  - [ ] **Does not** reject a record merely for `license.redistributionAllowed: false` (index ≠
+        redistribute; e.g. GENIE is a valid `REGISTERED-OPEN` index entry); a golden fixture asserts this.
   - [ ] Encodes the access-tier consistency rules as tests with synthetic fixtures; MIT; CI green.
 
 - **index-016 (aggregate-stats cohorts)**
-  - [ ] Only **open aggregate** layers indexed (SEER\*Explorer aggregate, GLOBOCAN, CDC WONDER); SEER
-        research microdata explicitly EXCLUDED (signed-agreement / controlled) and noted in the record.
-  - [ ] `accessTier: OPEN-AGGREGATE`; each statistic-source field cited; IARC/SEER terms verified.
+  - [ ] `entryType: population-statistics`; only **open aggregate** layers indexed (SEER\*Explorer
+        aggregate, GLOBOCAN, CDC WONDER); SEER research microdata explicitly EXCLUDED (signed-agreement /
+        controlled) and noted in the record.
+  - [ ] `accessTier: OPEN-AGGREGATE`; each statistic-source field cited; **IARC GLOBOCAN terms verified
+        (attribution + use conditions), not assumed open**; SEER terms verified.
 
-**M2 Definition of Done:** static search UI live (metadata-only, faceted, no tracking); ≥ 40 cohorts
-published cumulatively across ≥ 5 repositories; CI publish-gate linter blocks access-tier violations;
-staleness/drift detection running with a freshness SLA on every record.
+- **drift-017 (staleness/drift detection + freshness SLA)**
+  - [ ] Stores a **content hash of each record's terms URL** and re-checks on the freshness SLA; a
+        changed hash flips the record to the first-class **`recordState: termsChangedSinceSnapshot`**
+        and routes it to human re-verification (not a silent maintenance ticket).
+  - [ ] Every published record carries a freeze date + refresh window; MIT; CI green.
+
+**M2 Definition of Done:** static search UI live (metadata-only, faceted incl. `entryType`, no
+tracking); ≥ 40 **distinct** cohorts (deduped per the §6 identity rule) published cumulatively across
+≥ 5 repositories **and** meeting the coverage-representativeness target (≥ 30% rare-cancer /
+pediatric-AYA / non-US; ≥ 3 modalities); CI publish-gate linter blocks access-tier violations while
+allowing `redistributionAllowed: false` entries; staleness/drift detection running (terms-URL content
+hash + `termsChangedSinceSnapshot` state) with a freshness SLA on every record.
 
 ---
 
@@ -248,11 +288,13 @@ deferred with the reviewer-gap surfaced (never shipped unreviewed).
   "tokenEstimate": "medium",
   "status": "open",
   "context": "Open cancer cohorts are scattered across GDC, GEO, EMBL-EBI, DepMap, SEER, IARC and more, with inconsistent access terms and heterogeneous licenses, and the open-vs-controlled boundary (e.g. TCGA has both tiers) is routinely misunderstood. Before indexing any cohort, the project needs one canonical metadata schema whose access tier and license-rights breakdown are first-class, required, gate-controlled fields, and which is cohort-level only (no per-patient data). Binding guardrail: index only open-access/aggregate/de-identified cohorts; controlled-access (dbGaP, EGA, biobanks) and any identifiable patient data are out of scope; COSMIC/OncoKB are non-commercial and flagged; every field must be source-cited.",
-  "objective": "Define the canonical cohort metadata schema (JSON Schema + TypeScript types), the access-tier taxonomy (OPEN | OPEN-AGGREGATE | REGISTERED-OPEN | NON-COMMERCIAL | CONTROLLED), and the license-rights model that every per-cohort indexing task will populate.",
+  "objective": "Define the canonical cohort metadata schema (JSON Schema + TypeScript types), the typed entryType (patient-cohort | population-statistics | cell-model-collection | molecular-dataset) with conditional aggregateCounts, the cross-repository cohort-identity/dedup rule, the access-tier taxonomy (OPEN | OPEN-AGGREGATE | REGISTERED-OPEN | NON-COMMERCIAL | CONTROLLED), and the license-rights model that every per-cohort indexing task will populate.",
   "acceptanceCriteria": [
-    "JSON Schema + TS types define every required field: id, name, custodian, hostingRepository, cancerTypes[] (OncoTree primary; NCIt/ICD-O-3 cross-refs), population, aggregateCounts (aggregate only), assayTypes[], dataModality[], accessTier, license {id, url, permitsReuse, permitsDerivatives, commercialUseAllowed, redistributionAllowed, attributionRequired, shareAlike, snapshotRef}, accessTerms {registrationRequired, clickThrough, duaRequired, irbRequired, citationRequirement}, deIdentification {level, standard, publisherDocumented, notes}, provenance {sourceUrl, retrievedAt, version, custodianContact, attribution}, fieldProvenance[] {field, claim, sourceUrl, retrievedAt}, governanceFlags[], crossRefs[], completenessScore.",
+    "JSON Schema + TS types define every required field: id, name, entryType, identityKeys {primaryCustodian, programOrAccession, generationScope}, custodian, primaryHostingRepository, hostingLocations[] {repository, url, isMirror}, cancerTypes[] (OncoTree primary; NCIt/ICD-O-3 cross-refs), population, aggregateCounts (aggregate only; shape conditional on entryType), generationContext {funder?, consentBasis?, dataGenerationDateRange?}, assayTypes[], dataModality[], accessTier, license {id, url, permitsReuse, permitsDerivatives, commercialUseAllowed, redistributionAllowed, attributionRequired, shareAlike, snapshotRef}, accessTerms {registrationRequired, clickThrough, duaRequired, irbRequired, citationRequirement}, deIdentification {level, standard, publisherDocumented, notes}, provenance {sourceUrl, retrievedAt, version, custodianContact, attribution}, fieldProvenance[] {field, claim, sourceUrl, retrievedAt}, governanceFlags[], crossRefs[], recordState, completenessScore.",
+    "entryType is an enum and aggregateCounts shape is conditional on it (cell-model-collection -> cellLines/models; population-statistics -> statisticalUniverse; no forced 'patients' count on a non-patient entry).",
+    "Cross-repository identity is enforced: one record per distinct cohort keyed on identityKeys; the same cohort in multiple portals is recorded via hostingLocations[], never as multiple records.",
     "accessTier is an enum and only OPEN | OPEN-AGGREGATE | REGISTERED-OPEN are valid in a published record; CONTROLLED and NON-COMMERCIAL are rejected by the publish linter.",
-    "Every license rights boolean is required and must reference a fieldProvenance entry; an unverified value is never serialized as true.",
+    "Every license rights boolean is required and must reference a fieldProvenance entry; an unverified value is never serialized as true; redistributionAllowed: false is a valid index entry (index != redistribute).",
     "Schema structurally forbids per-patient / row-level / quasi-identifier fields (cohort-level descriptors only) so no identifiable data can ever be represented.",
     "Mixed-tier resources are representable only for their open tier via a governanceFlags value (mixed-tier-open-portion-only).",
     "Document and schema are licensed CC-BY-4.0; any committed tooling passes pnpm build && pnpm test && pnpm lint; commit is DCO signed-off."
@@ -275,9 +317,9 @@ deferred with the reviewer-gap surfaced (never shipped unreviewed).
 
 ## Task count rollup
 
-- **21 scheduled tasks** across M0–M3 (M0: 7 · M1: 6 · M2: 5 · M3: 3) and **7 backlog tasks** = **28 total**.
-- By type: design-spec 4 · code 6 · data 8 · research 5 · writing 2 · maintenance 2 · translation 1.
-- By risk: **high 2** (patient explainer + its translation) · **medium 14** · **low 12**.
+- **22 scheduled tasks** across M0–M3 (M0: 8 · M1: 6 · M2: 5 · M3: 3) and **7 backlog tasks** = **29 total**.
+- By type: design-spec 5 · code 6 · data 8 · research 5 · writing 2 · maintenance 2 · translation 1.
+- By risk: **high 2** (patient explainer + its translation) · **medium 14** · **low 13**.
 - Every data/research task requires its own committed `gates/<cohort-id>.json` before work proceeds;
   no controlled/identifiable resource is ever given a record (register-pointer only).
 - All tasks: `lane: donated`, `verifiedNeed: false`, `requestor: TO BE SECURED` until an adopter/steward

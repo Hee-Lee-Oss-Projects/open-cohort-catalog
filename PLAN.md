@@ -1,6 +1,6 @@
 # PLAN — open-cohort-catalog
 
-> Status: Draft · Version: 0.1.0 · Last updated: 2026-06-28 · Owner: TBD (maintainer) ·
+> Status: Draft · Version: 0.2.0 · Last updated: 2026-06-29 · Owner: TBD (maintainer) ·
 > Lane: donated · Track: 8b — Cancer research, broadly · Risk tier: **medium** (core catalog) /
 > **high** (any patient-facing educational layer)
 
@@ -81,7 +81,13 @@ a cancer data commons community. M0 includes explicit partner-outreach work; no 
 
 **Goals**
 - Produce a **canonical cohort metadata schema** purpose-built for cancer cohorts, with an
-  **access-tier taxonomy** and a **license-rights breakdown** as first-class, required fields.
+  **access-tier taxonomy** and a **license-rights breakdown** as first-class, required fields. The
+  schema models a **typed `entryType`** (patient cohort vs population-statistics vs cell-model vs
+  molecular dataset) so it does not falsely presume every entry is a patient cohort, and enforces a
+  **cross-repository cohort-identity / dedup rule** (one record per cohort; repositories are locations).
+- Become the **canonical cancer access-tier vocabulary + shared schema contract** that the Elyos
+  cancer siblings reuse, rather than a fourth overlapping cancer-dataset catalog (boundary in
+  "Competitive landscape & differentiation").
 - Build a **searchable catalog** of verified **open** cancer cohorts — each entry fully source-cited
   (provenance on every assertion) and gated through the access-tier + license + PII checklist.
 - Make **access-tier classification** (OPEN / OPEN-AGGREGATE / REGISTERED-OPEN / NON-COMMERCIAL /
@@ -115,9 +121,16 @@ Outcome-based and beneficiary-centric. Vanity metrics ("entries written") are ex
 an entry only counts when it is **verified, gated, and usable**, and impact only counts when it is
 **externally observable**.
 
+**Counting rule (anti-gaming).** All "cohorts indexed" / "across N repositories" counts are over
+**distinct canonical cohorts** under the cross-repository identity rule (§6), **not** records. The
+same cohort appearing in GDC, cBioPortal, Xena, and Synapse is **one** indexed cohort with multiple
+`hostingLocations[]`; it can never be counted five times to inflate the metric. The **adopter/steward
+metric is the actual gate on "delivered"** — entry count is secondary to a confirmed beneficiary.
+
 | Metric | Baseline | Target (first 6 months) |
 | --- | --- | --- |
-| Open cohorts indexed with a **complete, gate-passed, fully-cited** record (completeness ≥ 90/100) | 0 | ≥ 40 verified entries |
+| **Distinct** open cohorts indexed with a **complete, gate-passed, fully-cited** record (completeness ≥ 90/100; deduped per §6 identity rule) | 0 | ≥ 40 verified **distinct** cohorts |
+| Coverage representativeness (not just easy US-gov open data) — rare cancers, pediatric/AYA, non-US sources, modality spread | n/a | ≥ 30% of indexed cohorts are rare-cancer, pediatric/AYA, **or** non-US-sourced; ≥ 3 distinct modalities represented |
 | Access-tier classification accuracy (independent reviewer disagreement rate on tier) | n/a | **0 false-"open"** errors; < 5% any-field disagreement on audited sample |
 | License-rights accuracy (reviewer disagreement on permits-derivatives / commercial / redistribution) | n/a | **0** records with an unverified "permits-derivatives: true"; < 5% any-field disagreement |
 | Cohorts incorrectly admitted that were actually controlled/identifiable (must be zero) | n/a | **0** (any occurrence is a P0 incident) |
@@ -142,7 +155,11 @@ evidencing open access **fails** regardless of other fields.
 
 **In scope**
 - A **canonical cancer-cohort metadata schema** (fields in §6) with an access-tier taxonomy and a
-  license-rights breakdown.
+  license-rights breakdown, a typed **`entryType`**, and a **cross-repository cohort-identity rule**.
+- A **shared access-tier vocabulary + schema contract** published as the reusable layer for the Elyos
+  cancer siblings (`cancer-dataset-datasheets`, `ewing-open-data-catalog`, `cancer-data-dictionaries`),
+  with an explicit written boundary so the four projects compose into a stack, not four overlapping
+  catalogs (see "Competitive landscape & differentiation").
 - A **verified catalog** of open / open-aggregate / registered-open cancer cohorts, each entry
   source-cited and gate-passed, emitted as machine-readable records (JSON/CSV) + human-readable pages.
 - A **static, no-data search/browse UI** over the catalog (client-side; indexes metadata only).
@@ -166,6 +183,41 @@ evidencing open access **fails** regardless of other fields.
 - Medical advice, clinical interpretation, prognosis, or treatment guidance.
 - Re-identification, record linkage, or any analysis raising re-identification risk.
 - Automated, unattended publishing.
+
+## Competitive landscape & differentiation
+
+**No incumbent offers a cancer-specific, cross-repository, access-tier-first, license-rights-normalized,
+per-assertion-provenanced index of *open* cohorts.** The neighbours each solve a different problem:
+
+| Incumbent | What it is | Where it stops (our opening) |
+| --- | --- | --- |
+| **NCI Cancer Research Data Commons (CRDC) / General Commons** | The authoritative, funded cancer data commons; spans open + controlled; General Commons searches submitted studies, routes controlled access via dbGaP/DCF | Organized by node/repository, **not** a normalized cross-source license-rights breakdown; US/NCI-centric; no single "is this open, and on exactly what terms?" answer across non-NCI sources (GEO, EBI, COSMIC, OncoKB). Treat CRDC as an **authoritative tier-status source we cite**, not a competitor to mirror. |
+| **cBioPortal public studies** (~300 curated studies, mostly open) | The closest existing "browse open cancer cohorts" surface; harmonized, widely used | An **analysis portal**, not a license/access-terms catalog — tier and license are not first-class facets; only what's been ingested; no per-assertion provenance. (Now a **seed source**, §7.) |
+| **OmicsDI (EMBL-EBI)** | Real cross-repository omics dataset aggregation with an API | Discovery-oriented; **license/access-tier not normalized rights facets**; not cancer-focused; no per-assertion provenance |
+| **re3data.org / FAIRsharing.org** | Canonical registries of repositories / databases+standards+policies, with access/license metadata | **Repository/database granularity, not cohort**; broad not cancer; license info is descriptive, not a normalized, clause-cited rights matrix |
+| **dbGaP / EGA** | Authoritative **controlled-access** catalogs for individual-level genomic data | These are the **excluded set** — we *point* to them (exact application path), never index them. Their existence is precisely why an "open vs controlled?" disambiguation layer has value. |
+
+**Our differentiator (the moat).** A **cancer-scoped, cross-repository access-tier + normalized
+license-rights matrix** (`permitsReuse / derivatives / commercial / redistribution / attribution /
+shareAlike`, each with **clause-level provenance**) plus **immutable snapshots** (SHA-256 + Wayback) —
+the auditable **"is it open, and exactly what may I do with it?"** layer no incumbent provides. It is
+static, data-free, MIT+CC-BY, and forkable, so a steward can host it without standing up a CRDC node.
+
+**Differentiation vs the Elyos cancer siblings (operationalized boundary — load-bearing).** To avoid
+four overlapping cancer catalogs, the split is **written and contractual**, not implied:
+
+- **`open-cohort-catalog` (this project) = the breadth / access-tier + license layer.** Owns the
+  **access-tier taxonomy and license-rights schema contract**; answers "is it open and on what terms?"
+- **`cancer-dataset-datasheets` = the depth layer.** Rich per-dataset Datasheets-for-Datasets narrative;
+  **references this project's record by `id`** rather than re-deriving tier/license.
+- **`ewing-open-data-catalog` = a single-disease vertical.** **Consumes this schema and vocabulary**
+  for the Ewing-sarcoma slice rather than inventing its own tier enum.
+- **`cancer-data-dictionaries` = the variable/field-level layer.** Links **up** to the cohort record;
+  harmonizes variables, not access terms.
+
+**Win condition:** become the **canonical access-tier vocabulary the three siblings reuse** (one
+shared enum + schema contract across all four), turning overlap into a stack. A shared-vocabulary
+package and the boundary doc are tracked as deliverables (see Roadmap / `TASKS.md`).
 
 ## Solution approach & architecture
 
@@ -194,15 +246,40 @@ assay names, license text, access terms), never patient records.
 7. **Publish & track** — a human merges the record into the catalog; the static UI rebuilds; the
    Steward records adoption/reuse outcomes.
 
-**Canonical cohort metadata model (source of truth).** One internal record per cohort; all outputs
-(JSON, CSV, catalog page, search index) are *projections* of it. Required fields:
+**Unit of cataloging — `entryType` (resolves "cohort vs dataset").** The project name says "cohort,"
+but the seed sources are heterogeneous: DepMap indexes **cell lines** (no patients), GLOBOCAN/SEER are
+**population statistics** (no cohort), GEO *series* are **datasets**, TCGA is a *program*, GENIE is a
+*registry*. To stop the schema from misrepresenting half the seed sources, every record declares a
+typed **`entryType`**: `patient-cohort | population-statistics | cell-model-collection |
+molecular-dataset`. The **shape of `aggregateCounts` is conditional on `entryType`** (a
+`cell-model-collection` carries `cellLines`/`models`, not `patients`; `population-statistics` carries
+the statistical universe, not a sample roster). "Cohort" is used as the umbrella term for an indexed
+entry; the typed field carries the precise meaning.
+
+**Cross-repository cohort identity / dedup rule (so counts aren't gameable).** **One canonical record
+per distinct cohort; repositories are *locations*, not separate cohorts.** TCGA appears in GDC,
+cBioPortal, Xena, and the legacy ICGC portal; GENIE appears in Synapse *and* cBioPortal — these are
+**one** record each with multiple `hostingLocations[]`, not five records. The schema defines explicit
+**identity keys** (primary custodian + program/cohort accession + data-generation scope) and a
+**primary-custodian vs mirror** model. All coverage metrics count **distinct cohorts**, never records,
+closing the "index the same cohort five times to hit ≥40/≥5" loophole.
+
+**Canonical cohort metadata model (source of truth).** One internal record per **distinct** cohort;
+all outputs (JSON, CSV, catalog page, search index) are *projections* of it. Required fields:
 - `id`, `name`, `aka[]`
-- `custodian` (publishing body), `hostingRepository` (e.g. GDC, GEO, EMBL-EBI, PRIDE, DepMap, SEER, IARC)
+- `entryType` — enum `patient-cohort | population-statistics | cell-model-collection | molecular-dataset`
+- `identityKeys` `{primaryCustodian, programOrAccession, generationScope}` — the dedup key (see rule above)
+- `custodian` (publishing body), `primaryHostingRepository`, `hostingLocations[]` `{repository, url,
+  isMirror}` (e.g. GDC, GEO, EMBL-EBI, PRIDE, DepMap, cBioPortal, Xena, Synapse, SEER, IARC) — mirrors
+  recorded as locations of the **same** record, never as new records
 - `cancerTypes[]` (coded: NCIt / OncoTree / ICD-O-3 where available, plus free-text), `population`
-  (pediatric / AYA / adult / mixed)
-- `aggregateCounts` `{patients?, samples?, asOf}` — **aggregate counts only; never per-patient rows**
+  (pediatric / AYA / adult / mixed / n-a-for-cell-models)
+- `aggregateCounts` — **shape conditional on `entryType`**: `{patients?, samples?, cellLines?, models?,
+  statisticalUniverse?, asOf}` — **aggregate counts only; never per-patient rows**
 - `assayTypes[]` (e.g. WES, WGS, RNA-seq, methylation, proteomics, WSI/imaging, clinical-aggregate)
 - `dataModality[]`
+- `generationContext` `{funder?, consentBasis?, dataGenerationDateRange?}` — cheap-to-capture context
+  useful to beneficiaries (each field still cited via `fieldProvenance`; optional, never guessed)
 - `accessTier` — enum: `OPEN | OPEN-AGGREGATE | REGISTERED-OPEN | NON-COMMERCIAL | CONTROLLED`
   (only the first three are indexable; `NON-COMMERCIAL` → FLAG; `CONTROLLED` → EXCLUDE)
 - `license` `{id (SPDX or custom-id), url, permitsReuse, permitsDerivatives, commercialUseAllowed,
@@ -215,7 +292,15 @@ assay names, license text, access terms), never patient records.
 - `fieldProvenance[]` — **per-assertion** citations: `{field, claim, sourceUrl, retrievedAt}`
 - `governanceFlags[]` (e.g. `nc-license`, `registered-access`, `mixed-tier-open-portion-only`)
 - `crossRefs[]` (related dbGaP/EGA accession **as a pointer only**, related portals)
+- `recordState` — enum `current | termsChangedSinceSnapshot | underReverification` — a **first-class**
+  state (not just a maintenance ticket) flipped when drift detection sees the source terms change (§15)
 - `completenessScore {value}`
+
+**Index ≠ redistribute (REGISTERED-OPEN / no-redistribution sources are still indexable).** A record
+may have `license.redistributionAllowed: false` (e.g. AACR Project GENIE forbids redistributing the
+*data*) and still be **indexable**: we publish independently-verified factual **descriptors + a
+citation**, not the custodian's data or copyrighted prose. The publish linter must therefore treat
+`redistributionAllowed: false` as *valid for an index entry* and never reject it on that basis.
 
 **Mixed-tier resources rule.** For resources with both open and controlled tiers (e.g. TCGA via the
 GDC), the record describes **only the open-access tier**, sets `governanceFlags: [mixed-tier-open-portion-only]`,
@@ -241,6 +326,34 @@ where we author purely factual metadata — decided in `policy-lic-*`), with ups
 - **Mixed-tier = open-portion-only.** Never let a record bleed into a controlled tier.
 - **Static, dataless UI.** No backend that could accumulate sensitive data; the search index is over
   public metadata.
+
+**AI assistance (Claude) — drafting only, never deciding.** Claude is used to accelerate the most
+tedious steps, always behind the human gate, and only against **public, cohort-level descriptor pages**:
+1. **Cohort-metadata extraction** — Claude reads a public GEO series page, GDC/cBioPortal project page,
+   or DepMap release notes and **proposes** the structured record, emitting a candidate
+   `fieldProvenance` (source URL + the exact quoted clause) **for every field**. Human verifies; Claude
+   never commits.
+2. **Access/license language normalization** — map free-text terms ("freely available for academic
+   use," "requires registration," "no commercial use") into the `accessTier` enum + rights-boolean
+   matrix **as a quoted proposal with the basis span**, flagging ambiguity rather than guessing.
+3. **Drift triage** — diff a fresh terms page against the stored snapshot and summarize *what changed*
+   (tier? license? redistribution clause?), routing material changes to human re-verification (§15).
+4. **Cancer-type coding + lint explanation** — propose OncoTree/NCIt/ICD-O-3 codes (with rationale,
+   for domain-reviewer confirmation) and explain *why* a record failed the access-tier linter.
+
+**Hard AI guardrails (bind the model exactly as they bind a contributor):**
+- **Tier and license determinations are always `FLAG-for-review`, never `PASS`.** Claude proposes +
+  cites; the Access/License/PII reviewer decides. A model-only "OPEN" must **never** reach the
+  published catalog (the P0 failure mode).
+- **Never fabricate terms or citations.** Every Claude-asserted clause must resolve to a real, quoted
+  source span; "unknown ≠ true" binds the model — it may not infer a permissive default from silence.
+- **Never ingest controlled/identifiable data.** Claude is pointed only at public cohort-level
+  descriptors — never controlled data, per-patient rows, or anything behind a DUA. If a page surfaces
+  identifiable content, **halt-and-discard** (do not summarize it into a record).
+- **No de-identification / re-identification / linkage reasoning, and no medical advice** by Claude;
+  patient-facing text stays oncologist + advocate-gated.
+(Consult the Anthropic model/pricing/caching guidance via the `claude-api` skill before implementing;
+the extraction step benefits from prompt-caching the schema + gate rubric.)
 
 ## Data, licensing & compliance
 
@@ -281,13 +394,20 @@ where we author purely factual metadata — decided in `policy-lic-*`), with ups
   submitter-deposited data are generally reusable — verify per series for any stated restriction.
 - **EMBL-EBI resources** — **Expression Atlas** (CC-BY-4.0), **PRIDE** (open, commonly CC0),
   **ArrayExpress/BioStudies** (mostly open; verify per study) — verify each study's stated terms.
-- **DepMap** (Broad; cell-line dependency/omics, **not patient data**): CC-BY-4.0.
+- **DepMap** (Broad; cell-line dependency/omics, **not patient data**): CC-BY-4.0. (`entryType:
+  cell-model-collection` — counts are cell lines/models, not patients.)
 - **Cell Model Passports** (Sanger; cell-line metadata): open — verify exact license at gate.
+- **cBioPortal public studies** (~300 curated, mostly-open cancer genomics studies): the closest
+  existing "browse open cancer cohorts" surface and a primary **seed source**; many studies mirror
+  cohorts hosted elsewhere (GDC, Synapse) → apply the cross-repository identity rule and verify each
+  study's stated terms (some carry source-specific or no-redistribution clauses).
 - **ICGC open-access tier / PCAWG open data**: open tier accepted; controlled tier excluded.
-- **SEER\*Explorer / IARC GLOBOCAN / CDC WONDER** — **aggregate** incidence/mortality statistics:
-  open-aggregate (IARC/SEER terms verified; CDC is US-gov). Note: SEER **research microdata** requires
-  a signed agreement → that microdata is `REGISTERED`/`CONTROLLED` and **out of scope**; only the
-  open aggregate layer is indexed.
+- **SEER\*Explorer / IARC GLOBOCAN / CDC WONDER** — **aggregate** incidence/mortality statistics
+  (`entryType: population-statistics`): open-aggregate, **terms verified not assumed** — IARC GLOBOCAN
+  is **not** simply "open" (it carries attribution requirements and use conditions; verify per the
+  GLOBOCAN/Cancer-Today terms); SEER terms verified; CDC is US-gov public domain. Note: SEER **research
+  microdata** requires a signed agreement → that microdata is `REGISTERED`/`CONTROLLED` and **out of
+  scope**; only the open aggregate layer is indexed.
 
 **Flagged (non-commercial / custom → governance decision, not default-included):**
 - **COSMIC** (Wellcome Sanger Institute): free for **non-commercial** use with registration;
@@ -296,8 +416,9 @@ where we author purely factual metadata — decided in `policy-lic-*`), with ups
   redistribution restricted → **FLAG**.
 
 **Excluded (controlled / identifiable → register pointer only, never indexed):**
-- **dbGaP** controlled studies; **EGA** studies; **TCGA/ICGC controlled tiers** (germline,
-  raw sequence/BAMs); **individual-level biobanks** (UK Biobank, Genomics England, All of Us).
+- **dbGaP** controlled studies; **EGA** studies; **TCGA/ICGC controlled tiers** explicitly incl.
+  **germline + raw sequence/BAMs**; **GTEx** and **TOPMed** (controlled individual-level tiers);
+  **individual-level biobanks** (UK Biobank, Genomics England, All of Us, MVP).
 
 **Objective "indexable" criterion.** A cohort is indexable **only if** its `accessTier ∈ {OPEN,
 OPEN-AGGREGATE, REGISTERED-OPEN}` **and** `license.permitsReuse: true` with a cited clause/URL,
@@ -320,6 +441,14 @@ undocumented. We **never** de-identify, re-identify, link, or aggregate patient 
 would be transforming the data (out of scope). If discovery surfaces any identifiable datum, work
 halts, the datum is discarded, and the cohort is routed to EXCLUDE with the concern surfaced.
 
+**Legal theory for our own metadata (resolves the CC-BY-vs-CC0 question).** What we publish is
+**independently-verified factual descriptors** (counts, assay names, license id, access tier) **plus a
+citation** — *not* the custodian's copyrighted prose or their data. Bare facts are generally not
+copyrightable and need no license grant from the source; conversely, a source license that forbids
+redistributing **their** data/metadata (e.g. GENIE) does not bar us from stating independently-checked
+facts about it with attribution. This theory is what makes a source's `redistributionAllowed: false`
+compatible with an index entry, and is the basis for choosing our metadata license (`policy-lic-035`).
+
 **Attribution.** Every record attributes the custodian per the source terms, links to the source, and
 states the catalog metadata — not the data — is our contribution. Catalog metadata is **CC-BY-4.0**
 (CC0 considered for purely factual fields per `policy-lic-*`); code (schema/validators/UI) is **MIT**.
@@ -334,6 +463,10 @@ layer (per CLAUDE.md and the cancer track guardrails).
   tier (zero tolerance for a false "open"), the license-rights breakdown (each boolean cited), and that
   the cohort is de-identified/aggregate with no identifiable/controlled data in scope. No record ships
   without this sign-off. Must be filled **before the M0 pilot is reviewed** (blocking prerequisite).
+- **Mandatory second reviewer for the error-prone classes (not sampled).** Because a sampled audit can
+  miss a rare catastrophic mislabel, **every `REGISTERED-OPEN` record and every `mixed-tier` record
+  gets a second independent Access/License/PII sign-off** — 100%, not a sample. These are the classes
+  most likely to be mis-tiered (registered-but-open vs controlled; open-portion vs controlled-portion).
 - **Technical reviewer** — confirms schema validity, citation/link resolvability, validator CI green,
   and that the static UI exposes no data beyond public metadata.
 - **Oncology-data domain reviewer** — engaged for ambiguous tiers, mixed-tier resources, or any cohort
@@ -366,25 +499,40 @@ shipped additionally requires **both** oncologist and advocate sign-offs on file
   lowest-risk, clearly-open cohort (a US-gov / CC-BY, no-patient-data resource such as **DepMap** or a
   **GDC open-tier TCGA** descriptor) so a real, verifiable record is reachable without depending on a
   third party; and at least one outreach thread is opened toward a potential adopter/steward.
-- Exit criteria: (1) canonical cohort schema + access-tier taxonomy + license-rights model published;
-  (2) access-tier/license/PII gate checklist (incl. the NC policy) exists and is applied to one cohort;
-  (3) schema validator + citation resolver green in CI with golden fixtures; (4) **one** cohort fully
-  indexed end-to-end (gate-passed, fully cited, completeness ≥ 90/100); (5) ≥ 1 partner/adopter
-  outreach thread opened; (6) excluded-resources register seeded with the controlled set (dbGaP/EGA/biobanks).
+- Exit criteria: (1) canonical cohort schema + access-tier taxonomy + license-rights model published,
+  including the typed **`entryType`** (patient-cohort / population-statistics / cell-model-collection /
+  molecular-dataset), conditional `aggregateCounts`, and the **cross-repository cohort-identity / dedup
+  rule** (one record per distinct cohort; repositories are `hostingLocations`); (2) access-tier/license/PII
+  gate checklist (incl. the NC policy) exists and is applied to one cohort; (3) schema validator +
+  citation resolver green in CI with golden fixtures; (4) **one** cohort fully indexed end-to-end
+  (gate-passed, fully cited, completeness ≥ 90/100); (5) ≥ 1 partner/adopter outreach thread opened;
+  (6) excluded-resources register seeded with the controlled set (dbGaP/EGA/biobanks + TCGA-controlled/
+  germline, GTEx, TOPMed); (7) the **sibling boundary + shared access-tier vocabulary/schema-contract
+  doc** drafted (this project owns the vocabulary the siblings reuse).
 
 **M1 — Gate hardened + first real coverage**
 - Goal: make the gate rigorous and index a credible first set across repositories.
-- Exit criteria: (1) gate codified as a reviewable artifact and applied to ≥ 10 cohorts; (2) ≥ 10
-  cohorts published (gate-passed, fully cited) spanning ≥ 3 repositories; (3) NC policy decided and
-  COSMIC/OncoKB dispositioned per it; (4) license-snapshot capture working (committed copy + SHA-256 +
-  Wayback); (5) ≥ 1 confirmed adopter/steward **or** an honest "not yet secured" with blockers surfaced.
+- Exit criteria: (1) gate codified as a reviewable artifact and applied to ≥ 10 **distinct** cohorts,
+  with **mandatory second-reviewer** on every `REGISTERED-OPEN` / `mixed-tier` record; (2) ≥ 10
+  **distinct** cohorts published (gate-passed, fully cited, deduped per the identity rule) spanning ≥ 3
+  repositories; (3) NC policy decided and COSMIC/OncoKB dispositioned per it; (4) license-snapshot
+  capture working (committed copy + SHA-256 + Wayback); (5) **seed list expanded** to include
+  cBioPortal public studies (+ candidate UCSC Xena, GDC non-TCGA open programs, CCLE/GDSC, HTAN,
+  ProteomeXchange cancer sets) on the candidate backlog; (6) ≥ 1 confirmed adopter/steward **or** an
+  honest "not yet secured" with blockers surfaced.
 
 **M2 — Searchable interface + scale**
 - Goal: ship the static search/browse UI and scale coverage via the candidate backlog.
 - Exit criteria: (1) static search UI live over the catalog (metadata-only, no patient data, no
-  tracking), faceted by cancer type / repository / access tier / license; (2) ≥ 40 cohorts published
-  cumulatively across ≥ 5 repositories; (3) staleness/drift detection running; (4) automated CI gate
-  that **blocks** any record violating the access-tier rules (no CONTROLLED, no uncited rights boolean).
+  tracking), faceted by cancer type / repository / access tier / license / `entryType`; (2) ≥ 40
+  **distinct** cohorts (deduped per the identity rule) published cumulatively across ≥ 5 repositories,
+  **meeting the coverage-representativeness target** (≥ 30% rare-cancer / pediatric-AYA / non-US;
+  ≥ 3 modalities); (3) staleness/drift detection running with a **concrete signal** — a stored content
+  hash of each terms URL, re-checked on the SLA, flipping the record to the first-class
+  `termsChangedSinceSnapshot` state on change; (4) automated CI gate that **blocks** any record
+  violating the access-tier rules (no CONTROLLED, no uncited rights boolean), while correctly
+  **allowing** `redistributionAllowed: false` index entries; (5) every record emits **schema.org/Dataset
+  + DCAT JSON-LD** so the catalog is itself discoverable (turning Google Dataset Search into a channel).
 
 **M3 — Adoption, reuse outcomes & sustainability + (optional) patient layer**
 - Goal: demonstrate real beneficiary use, a maintenance model, and — if and only if expert review is
@@ -429,11 +577,17 @@ before work proceeds.
 ## Dependencies & integrations
 
 - **Repositories / custodians (sources, not integrations that move data):** NIH/NCI Genomic Data
-  Commons (GDC: TCGA/TARGET/CPTAC open tier), NCBI GEO, EMBL-EBI (Expression Atlas, PRIDE,
-  ArrayExpress/BioStudies), Broad DepMap, Sanger Cell Model Passports, ICGC/PCAWG (open tier), SEER
-  (aggregate), IARC GLOBOCAN, CDC WONDER, AACR Project GENIE (registered-open). Each verified per-source.
+  Commons (GDC: TCGA/TARGET/CPTAC open tier, + candidate non-TCGA open programs HCMI/CGCI/MMRF), NCBI
+  GEO, EMBL-EBI (Expression Atlas, PRIDE, ArrayExpress/BioStudies), **cBioPortal public studies**,
+  **UCSC Xena**, Broad DepMap, Sanger Cell Model Passports, candidate CCLE/GDSC and HTAN, ICGC/PCAWG
+  (open tier), SEER (aggregate), IARC GLOBOCAN, CDC WONDER, AACR Project GENIE (registered-open; Synapse
+  + cBioPortal locations of one cohort). Each verified per-source; multi-repository appearances deduped
+  to one record per the §6 identity rule.
+- **Authoritative tier-status reference (cite, don't mirror):** NCI Cancer Research Data Commons (CRDC) /
+  General Commons — the funded source of truth for open-vs-controlled status we reference at the gate.
 - **Flagged sources:** COSMIC, OncoKB (NC/custom → governance decision).
-- **Excluded sources (register pointer only):** dbGaP, EGA, individual-level biobanks.
+- **Excluded sources (register pointer only):** dbGaP, EGA, TCGA/ICGC controlled tiers (germline/BAMs),
+  GTEx, TOPMed, individual-level biobanks (UK Biobank, Genomics England, All of Us, MVP).
 - **Standards / vocabularies:** SPDX license identifiers; NCIt / OncoTree / ICD-O-3 cancer-type coding;
   schema.org/Dataset & DCAT for cross-walk; Datasheets-for-Datasets concepts; FAIR principles.
 - **Tooling:** Wayback Machine (license snapshots), SHA-256 hashing, a static-site/search-index builder.
@@ -476,16 +630,57 @@ before work proceeds.
 
 - **Post-delivery ownership:** the Steward maintains adopter relationships and the outcome ledger; the
   Maintainer keeps the schema, validators, gate, and UI current with source/standard changes.
-- **Freshness SLA:** each record carries a freeze date and a refresh window (e.g. annual, or on a
-  detected source change). Drift detection flags records whose source terms/versions changed; stale
-  records become `maintenance` tasks.
+- **Freshness SLA + concrete drift signal:** each record carries a freeze date and a refresh window
+  (e.g. annual, or on a detected source change). Because most sources have **no machine-readable terms
+  feed**, drift is detected by storing a **content hash of each terms URL** and re-checking it on the
+  SLA; a changed hash flips the record to the first-class **`termsChangedSinceSnapshot`** state (not
+  merely a maintenance ticket) and routes it to human re-verification (Claude may pre-triage *what*
+  changed, §6 architecture). Confirmed-stale records become `maintenance` tasks.
 - **Outcome tracking:** the Steward records adoption and external reuse events against the success
   metrics, reviewed each milestone. Access-tier/license errors are tracked as incidents (target zero).
 - **Community contribution:** once the schema + gate are stable, external contributors can propose
   cohorts via the gate; no contribution is published without the mandatory reviewer sign-off.
 
+## Adjacent opportunities
+
+Natural extensions once the catalog + schema contract are stable (each preserves the metadata-only,
+no-patient-data, human-gated invariants; none is a commitment in the first 6 months):
+
+- **Cross-cohort access-terms API** (`GET /cohort/{id}/terms` → access tier + normalized rights matrix
+  + provenance). The catalog's most reusable output: lets downstream pipelines and the Elyos siblings
+  **gate on license before touching data**, served as static JSON (no patient data, no backend store).
+- **"Is this cohort open?" MCP server** — wraps the access-terms API as a tool any agent/IDE can call
+  to check tier + license **before** suggesting a download; a sharp, demoable, Anthropic-ecosystem
+  distribution channel. Returns the cited rights matrix, never a download.
+- **Shared Elyos access-tier vocabulary package** consumed by `ewing-open-data-catalog`,
+  `cancer-dataset-datasheets`, and `cancer-data-dictionaries` — the concrete artifact that turns the
+  four projects into one stack (the "win condition" above).
+- **License-snapshot / drift watcher as a standalone utility** — "did the terms change?" is useful to
+  any FAIR catalog; potentially contributable to the FAIRsharing/re3data communities.
+- **Controlled-access concierge** — for excluded dbGaP/EGA/CRDC studies, a pointer record carrying the
+  *exact* application path (DACO, dbGaP authorized access) so users are neither misled into thinking
+  the data is open **nor** that it is unavailable.
+
 ## Open questions
 
+- **What is the indexed unit of record**, and how do multi-repository appearances dedup to one
+  canonical cohort? (Resolved in v0.2: typed `entryType` + cross-repository identity rule, §6 — kept
+  here as the standing governance question if new source shapes appear.)
+- **What is the legal basis** for publishing our *own* metadata (CC-BY vs CC0), given some sources
+  (e.g. GENIE) forbid redistributing *their* data/metadata? (v0.2 states the legal theory in §7;
+  `policy-lic-035` finalizes CC-BY-4.0 vs CC0 for purely factual fields.)
+- **Sibling boundaries:** is this project the *owner* of the shared access-tier vocabulary the cancer
+  siblings consume — and how is divergence into four tier taxonomies prevented? (v0.2 default: yes,
+  owner; boundary doc + shared schema-contract package are M0/Roadmap deliverables.)
+- **Coverage target:** breadth-first (many easy US-gov open resources) vs depth/diversity-first (rare
+  cancer, non-US, NC-flagged)? (v0.2 adds a coverage-representativeness metric pushing toward diversity.)
+- **Is cBioPortal in scope** as a seed source? (v0.2 default: yes — added to §7 seed sources, deduped
+  via the identity rule since it mirrors cohorts hosted elsewhere.)
+- **Drift-detection authority:** absent machine-readable terms feeds, what is the concrete change-signal
+  and re-verification cadence per source? (v0.2 default: terms-URL content hash + SLA re-check +
+  `termsChangedSinceSnapshot` state; cadence set per-source in the freshness SLA.)
+- **Adopter-first sequencing:** should M0 secure the steward *before* indexing toward 40 entries, given
+  "delivered" hinges on adoption, not entry count? (v0.2 makes the adopter the gating metric.)
 - Which named research group, advocacy org, or repository will be the first **confirmed
   adopter/steward**? (Blocks `verifiedNeed: true`.)
 - Catalog metadata license: **CC-BY-4.0** vs **CC0** for purely factual fields — decided in `policy-lic-*`
@@ -586,6 +781,8 @@ Executive summary; Problem & beneficiaries; Goals and non-goals; Success metrics
 Solution approach & architecture; Data, licensing & compliance; Quality, review & risk gates; Roadmap
 & milestones; Work breakdown; Governance, roles & stakeholders; Dependencies & integrations; Risks &
 mitigations; Security & privacy; Sustainability & maintenance; Open questions; References. ✔
+(v0.2 adds two **additive** non-required H2 sections — "Competitive landscape & differentiation" and
+"Adjacent opportunities" — without removing or reordering any required section.)
 
 **Correctness fixes applied during review:**
 - Confirmed the **Data, licensing & compliance** section **leads** with the binding cancer guardrails
@@ -608,3 +805,63 @@ COSMIC/OncoKB inclusion-with-flag vs pointer-only; decide whether the patient la
 6-month window. **No fabricated partner or verified need has been asserted anywhere.**
 
 **Verdict:** Plan is internally consistent, guardrail-compliant, and ready for maintainer review.
+
+---
+
+## Changelog — v0.2 (analysis merged)
+
+This version merges the findings of `COMPETITIVE-ANALYSIS.md` (source of truth) into the plan,
+surgically and additively. No guardrail was weakened; no partner, adopter, or verified need was
+invented. Cancer guardrails (open/aggregate/de-identified only; controlled out; per-source license
+verify; provenance-on-every-assertion; no medical advice) are preserved and, in places, strengthened.
+
+**Correctness / schema / license / safety fixes applied (analysis §1, §6):**
+- **`entryType` defined** (`patient-cohort | population-statistics | cell-model-collection |
+  molecular-dataset`) with **conditional `aggregateCounts`**, so DepMap (cell lines) and GLOBOCAN
+  (population stats) are no longer forced into a patient-cohort shape (gap A). [§6, Goals, M0]
+- **Cross-repository cohort-identity / dedup rule** added (one record per distinct cohort; repositories
+  are `hostingLocations[]`); all coverage metrics now count **distinct cohorts**, closing the
+  "index the same cohort five times to hit ≥40/≥5" gaming hole (gap B). [§4, §6, M0/M1/M2]
+- **Legal theory for our own metadata** stated (independently-verified factual descriptors + citation,
+  not the custodian's data/prose), making `redistributionAllowed: false` compatible with an index entry
+  and grounding the CC-BY-vs-CC0 decision (gap C). [§7, §6, Open questions]
+- **Index ≠ redistribute** clarified so the publish linter accepts `REGISTERED-OPEN` /
+  no-redistribution records (e.g. GENIE) instead of wrongly rejecting them (gap H). [§6, M2]
+- **Concrete drift signal** specified (terms-URL content hash + SLA re-check + first-class
+  `termsChangedSinceSnapshot` record state) (gap D). [§6, §15, M2]
+- **GLOBOCAN/IARC "aggregate ≠ automatically open"** caveat added (attribution + use conditions verified,
+  not assumed); **`generationContext`** (funder/consent/date-range) field added (gap H). [§7, §6]
+- **cBioPortal public studies added as a seed source**; excluded register expanded with TCGA-controlled/
+  germline, GTEx, TOPMed, MVP (gap G). [§7, §12, M1]
+- **Mandatory (not sampled) second reviewer** for `REGISTERED-OPEN` and `mixed-tier` records — the
+  classes most likely to be mislabeled (gap F). [§8, M1]
+- **Coverage-representativeness metric** added (rare-cancer / pediatric-AYA / non-US / modality spread)
+  so the catalog isn't 40 easy US-gov resources (gap F/G). [§4, M2]
+
+**Sibling differentiation operationalized (analysis §1E, §4):**
+- New **"Competitive landscape & differentiation"** section with a **written boundary + shared schema
+  contract**: this project = breadth / access-tier + license layer; `cancer-dataset-datasheets` = depth;
+  `ewing-open-data-catalog` = disease vertical (consumes this schema); `cancer-data-dictionaries` =
+  variable-level. **Win condition: be the canonical access-tier vocabulary the siblings reuse.**
+
+**Strategy integrated (analysis §2–§7):**
+- **Competitive landscape** documented (NCI CRDC, cBioPortal, OmicsDI, re3data/FAIRsharing, dbGaP/EGA)
+  with the differentiator = a cancer-scoped cross-repository **access-tier + normalized license-rights
+  matrix with clause-level provenance + immutable snapshots** — the auditable "is it open, and exactly
+  what may I do?" layer.
+- **Claude API leverage folded into architecture** (cohort-metadata extraction with cited
+  `fieldProvenance`; access/license-language normalization into the enum as a quoted proposal; drift
+  triage; coding/lint assist) — with hard guardrails: tier/license determinations are always
+  **FLAG-for-review, never PASS**; never fabricate terms/citations ("unknown ≠ true" binds the model);
+  **never ingest controlled/identifiable data**; no de-id/re-id/linkage; no medical advice.
+- **Optimizations folded into the Roadmap** (entryType + dedup in M0; second-reviewer + seed-list
+  expansion in M1; concrete drift signal + coverage target + schema.org/DCAT JSON-LD in M2).
+- New **"Adjacent opportunities"** section (cross-cohort access-terms API; "is this cohort open?" MCP
+  server; shared access-tier vocabulary package; drift-watcher utility; controlled-access concierge).
+- **Open questions merged** with the analysis's maintainer questions, each annotated with its v0.2
+  resolution or default.
+
+**Preserved unchanged:** vision, beneficiary case, the binding cancer guardrails and their ordering,
+the access-tier taxonomy, metadata-only/no-patient-data invariant, mixed-tier open-portion-only rule,
+synthetic-only fixtures, `verifiedNeed: false` honesty, Appendix A. `COMPETITIVE-ANALYSIS.md` left
+unchanged. Version bumped 0.1.0 → 0.2.0.
