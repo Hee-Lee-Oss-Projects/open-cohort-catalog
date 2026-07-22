@@ -11,7 +11,7 @@
   "deliverable": "pr",
   "tokenEstimate": "medium",
   "status": "open",
-  "context": "A programmatic access layer over the catalog enables downstream pipelines and the Elyos sibling projects (ewing-open-data-catalog, cancer-dataset-datasheets) to query the access-tier and license-rights information before touching any data. The API is served as static JSON (e.g. pre-generated endpoint files) hosted on GitHub Pages or equivalent — no server that stores user input, no patient data, no tracking. Key endpoint: GET /cohort/{id}/terms returns the access tier, license rights booleans, and provenance for a given cohort. MIT-licensed.",
+  "context": "A programmatic access layer over the catalog enables downstream pipelines and the Hee-Lee Oss sibling projects (ewing-open-data-catalog, cancer-dataset-datasheets) to query the access-tier and license-rights information before touching any data. The API is served as static JSON (e.g. pre-generated endpoint files) hosted on GitHub Pages or equivalent — no server that stores user input, no patient data, no tracking. Key endpoint: GET /cohort/{id}/terms returns the access tier, license rights booleans, and provenance for a given cohort. MIT-licensed.",
   "objective": "Generate a static JSON API over the catalog records (per-cohort terms endpoints + an index) so downstream pipelines and sibling projects can programmatically query access tiers and license rights without a backend server, patient data, or tracking.",
   "acceptanceCriteria": [
     "A build script generates static JSON API endpoint files (e.g. api/cohort/{id}/terms.json) from catalog records; the files are committed and served statically.",

@@ -85,7 +85,7 @@ a cancer data commons community. M0 includes explicit partner-outreach work; no 
   schema models a **typed `entryType`** (patient cohort vs population-statistics vs cell-model vs
   molecular dataset) so it does not falsely presume every entry is a patient cohort, and enforces a
   **cross-repository cohort-identity / dedup rule** (one record per cohort; repositories are locations).
-- Become the **canonical cancer access-tier vocabulary + shared schema contract** that the Elyos
+- Become the **canonical cancer access-tier vocabulary + shared schema contract** that the Hee-Lee Oss
   cancer siblings reuse, rather than a fourth overlapping cancer-dataset catalog (boundary in
   "Competitive landscape & differentiation").
 - Build a **searchable catalog** of verified **open** cancer cohorts — each entry fully source-cited
@@ -156,7 +156,7 @@ evidencing open access **fails** regardless of other fields.
 **In scope**
 - A **canonical cancer-cohort metadata schema** (fields in §6) with an access-tier taxonomy and a
   license-rights breakdown, a typed **`entryType`**, and a **cross-repository cohort-identity rule**.
-- A **shared access-tier vocabulary + schema contract** published as the reusable layer for the Elyos
+- A **shared access-tier vocabulary + schema contract** published as the reusable layer for the Hee-Lee Oss
   cancer siblings (`cancer-dataset-datasheets`, `ewing-open-data-catalog`, `cancer-data-dictionaries`),
   with an explicit written boundary so the four projects compose into a stack, not four overlapping
   catalogs (see "Competitive landscape & differentiation").
@@ -203,7 +203,7 @@ shareAlike`, each with **clause-level provenance**) plus **immutable snapshots**
 the auditable **"is it open, and exactly what may I do with it?"** layer no incumbent provides. It is
 static, data-free, MIT+CC-BY, and forkable, so a steward can host it without standing up a CRDC node.
 
-**Differentiation vs the Elyos cancer siblings (operationalized boundary — load-bearing).** To avoid
+**Differentiation vs the Hee-Lee Oss cancer siblings (operationalized boundary — load-bearing).** To avoid
 four overlapping cancer catalogs, the split is **written and contractual**, not implied:
 
 - **`open-cohort-catalog` (this project) = the breadth / access-tier + license layer.** Owns the
@@ -307,7 +307,7 @@ GDC), the record describes **only the open-access tier**, sets `governanceFlags:
 and explicitly names the controlled portion as out of scope. The catalog never extends a record to
 controlled data.
 
-**Tech stack.** TypeScript, ESM, pnpm workspaces (Elyos convention). The schema is JSON Schema +
+**Tech stack.** TypeScript, ESM, pnpm workspaces (Hee-Lee Oss convention). The schema is JSON Schema +
 TypeScript types. Validators/gate tooling are small Node packages with minimal dependencies. Catalog
 records are JSON (one file per cohort) with generated CSV. The search UI is a **static client-side
 site** (e.g. prebuilt search index over the JSON; no server that stores user input, no patient data,
@@ -591,7 +591,7 @@ before work proceeds.
 - **Standards / vocabularies:** SPDX license identifiers; NCIt / OncoTree / ICD-O-3 cancer-type coding;
   schema.org/Dataset & DCAT for cross-walk; Datasheets-for-Datasets concepts; FAIR principles.
 - **Tooling:** Wayback Machine (license snapshots), SHA-256 hashing, a static-site/search-index builder.
-- **Elyos pieces:** Task JSON schema (`packages/schema`), the donated-lane CLI workspace/PR flow
+- **Hee-Lee Oss pieces:** Task JSON schema (`packages/schema`), the donated-lane CLI workspace/PR flow
   (`packages/cli`), good-deed definition + refusal guardrails. **No funded-lane/runner dependency**
   (this project is donated lane).
 
@@ -647,12 +647,12 @@ Natural extensions once the catalog + schema contract are stable (each preserves
 no-patient-data, human-gated invariants; none is a commitment in the first 6 months):
 
 - **Cross-cohort access-terms API** (`GET /cohort/{id}/terms` → access tier + normalized rights matrix
-  + provenance). The catalog's most reusable output: lets downstream pipelines and the Elyos siblings
+  + provenance). The catalog's most reusable output: lets downstream pipelines and the Hee-Lee Oss siblings
   **gate on license before touching data**, served as static JSON (no patient data, no backend store).
 - **"Is this cohort open?" MCP server** — wraps the access-terms API as a tool any agent/IDE can call
   to check tier + license **before** suggesting a download; a sharp, demoable, Anthropic-ecosystem
   distribution channel. Returns the cited rights matrix, never a download.
-- **Shared Elyos access-tier vocabulary package** consumed by `ewing-open-data-catalog`,
+- **Shared Hee-Lee Oss access-tier vocabulary package** consumed by `ewing-open-data-catalog`,
   `cancer-dataset-datasheets`, and `cancer-data-dictionaries` — the concrete artifact that turns the
   four projects into one stack (the "win condition" above).
 - **License-snapshot / drift watcher as a standalone utility** — "did the terms change?" is useful to
@@ -697,11 +697,11 @@ no-patient-data, human-gated invariants; none is a commitment in the first 6 mon
 
 ## References
 
-- Elyos work rules — `C:\code\elyos\CLAUDE.md`
-- Good Deed Definition + risk tiers — `C:\code\elyos\docs\good-deed-definition.md`
-- Task JSON schema — `C:\code\elyos\packages\schema\src\schemas.ts`
-- Portfolio roadmap (Track 8b: open-cohort-catalog) — `C:\code\elyos\planning\ROADMAP.md`
-- Sibling plan (house conventions) — `C:\code\elyos\planning\projects\open-data-datasheets\PLAN.md`
+- Hee-Lee Oss work rules — `C:\code\hee-lee-oss\CLAUDE.md`
+- Good Deed Definition + risk tiers — `C:\code\hee-lee-oss\docs\good-deed-definition.md`
+- Task JSON schema — `C:\code\hee-lee-oss\packages\schema\src\schemas.ts`
+- Portfolio roadmap (Track 8b: open-cohort-catalog) — `C:\code\hee-lee-oss\planning\ROADMAP.md`
+- Sibling plan (house conventions) — `C:\code\hee-lee-oss\planning\projects\open-data-datasheets\PLAN.md`
 - NIH Genomic Data Sharing Policy; NCI Genomic Data Commons (GDC) data access tiers
 - NCBI GEO; EMBL-EBI (Expression Atlas, PRIDE, ArrayExpress/BioStudies) terms
 - Broad DepMap (CC-BY-4.0); Sanger Cell Model Passports; ICGC/PCAWG data access

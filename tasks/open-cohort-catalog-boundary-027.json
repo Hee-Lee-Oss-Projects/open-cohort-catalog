@@ -11,8 +11,8 @@
   "deliverable": "document",
   "tokenEstimate": "small",
   "status": "open",
-  "context": "Four Elyos cancer projects risk overlapping: open-cohort-catalog (breadth/access-tier layer), cancer-dataset-datasheets (depth/narrative), ewing-open-data-catalog (disease vertical), and cancer-data-dictionaries (variable-level). To avoid four overlapping cancer-data catalogs, this project is intended to be the canonical owner of the shared access-tier vocabulary and schema contract that the siblings consume. Without a written, contractual boundary document, this split is merely implied and divergence into four tier taxonomies is likely. This task depends on schema-001 for the access-tier taxonomy to be defined before it can be documented as the shared contract.",
-  "objective": "Write and commit the sibling boundary document that defines each project's scope, designates open-cohort-catalog as the canonical owner of the access-tier vocabulary + schema contract, specifies the shared enum and record-id reference that siblings consume, and prevents taxonomic divergence across the four Elyos cancer projects.",
+  "context": "Four Hee-Lee Oss cancer projects risk overlapping: open-cohort-catalog (breadth/access-tier layer), cancer-dataset-datasheets (depth/narrative), ewing-open-data-catalog (disease vertical), and cancer-data-dictionaries (variable-level). To avoid four overlapping cancer-data catalogs, this project is intended to be the canonical owner of the shared access-tier vocabulary and schema contract that the siblings consume. Without a written, contractual boundary document, this split is merely implied and divergence into four tier taxonomies is likely. This task depends on schema-001 for the access-tier taxonomy to be defined before it can be documented as the shared contract.",
+  "objective": "Write and commit the sibling boundary document that defines each project's scope, designates open-cohort-catalog as the canonical owner of the access-tier vocabulary + schema contract, specifies the shared enum and record-id reference that siblings consume, and prevents taxonomic divergence across the four Hee-Lee Oss cancer projects.",
   "acceptanceCriteria": [
     "A committed boundary document (e.g. SIBLINGS.md or a section in PLAN.md) explicitly defines the role of each sibling project: open-cohort-catalog = breadth/access-tier+license layer; cancer-dataset-datasheets = depth (references this project's record by id); ewing-open-data-catalog = disease vertical (consumes this schema/vocabulary); cancer-data-dictionaries = variable-level (links up to cohort records).",
     "The document defines the shared access-tier enum (OPEN | OPEN-AGGREGATE | REGISTERED-OPEN | NON-COMMERCIAL | CONTROLLED) and the record-id reference contract that siblings reuse, with an explicit rule that siblings consume rather than re-derive the vocabulary.",
@@ -24,7 +24,7 @@
     "open-cohort-catalog-schema-001",
     "open-cohort-catalog PLAN.md (Competitive landscape & differentiation section)"
   ],
-  "output": "A committed sibling boundary document defining the written, contractual split between the four Elyos cancer projects and specifying the shared access-tier vocabulary + schema-contract package that siblings consume, preventing taxonomic divergence.",
+  "output": "A committed sibling boundary document defining the written, contractual split between the four Hee-Lee Oss cancer projects and specifying the shared access-tier vocabulary + schema-contract package that siblings consume, preventing taxonomic divergence.",
   "requestor": "TO BE SECURED",
   "verifiedNeed": false,
   "outputLicense": "CC-BY-4.0"

@@ -51,7 +51,7 @@ changed since snapshot" a first-class record state, not just a maintenance task.
 **E. Scope overlap with siblings is asserted but not operationalized.** The plan references
 `open-data-datasheets` for house conventions but does **not** differentiate against the named cancer
 siblings (`cancer-dataset-datasheets`, `ewing-open-data-catalog`, `cancer-data-dictionaries`). Risk of
-three Elyos projects all "indexing cancer datasets." The clean split (make it explicit in §3/Scope):
+three Hee-Lee Oss projects all "indexing cancer datasets." The clean split (make it explicit in §3/Scope):
 this project = **breadth index keyed on access-tier + license** (the "is it open, and on what terms?"
 layer); `cancer-dataset-datasheets` = **depth** (rich per-dataset datasheet narrative à la
 Datasheets-for-Datasets); `ewing-open-data-catalog` = **one disease vertical** (could consume this
@@ -207,7 +207,7 @@ cBioPortal is the closest browse surface but is an analysis tool, not a terms ca
   flatten.
 - **Static, data-free, MIT+CC-BY artifact**: forkable, embeddable, no infrastructure to adopt — lowers the
   bar for a steward to host it vs standing up a CRDC node.
-- **vs Elyos siblings (make this explicit and load-bearing):** this is the **breadth/access-tier layer**;
+- **vs Hee-Lee Oss siblings (make this explicit and load-bearing):** this is the **breadth/access-tier layer**;
   `cancer-dataset-datasheets` is the **depth/datasheet-narrative layer**; `ewing-open-data-catalog` is a
   **single-disease vertical** that should *consume this schema*; `cancer-data-dictionaries` is the
   **variable-level** layer. One shared access-tier vocabulary + schema contract across all four turns
@@ -288,7 +288,7 @@ extraction step benefits from prompt caching the schema + gate rubric.)
 - **"Is this cohort open?" MCP server** — wraps the access-terms API as a tool any agent/IDE can call to
   check tier+license before suggesting a download; natural Anthropic-ecosystem distribution and a sharp,
   demoable artifact.
-- **Shared Elyos access-tier vocabulary package** consumed by `ewing-open-data-catalog` (disease vertical),
+- **Shared Hee-Lee Oss access-tier vocabulary package** consumed by `ewing-open-data-catalog` (disease vertical),
   `cancer-dataset-datasheets` (depth datasheets reference this record by id), and `cancer-data-dictionaries`
   (variable-level layer links up to the cohort record). Turns four projects into one stack.
 - **License-snapshot/drift watcher as a standalone service** — useful well beyond cancer (any FAIR catalog

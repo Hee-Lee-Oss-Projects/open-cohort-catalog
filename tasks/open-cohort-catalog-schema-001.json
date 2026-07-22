@@ -22,9 +22,9 @@
     "Document and schema are licensed CC-BY-4.0; any committed tooling passes pnpm build && pnpm test && pnpm lint; commit is DCO signed-off."
   ],
   "resources": [
-    "C:\\code\\elyos\\planning\\projects\\open-cohort-catalog\\PLAN.md",
-    "C:\\code\\elyos\\planning\\ROADMAP.md",
-    "C:\\code\\elyos\\packages\\schema\\src\\schemas.ts",
+    "C:\\code\\hee-lee-oss\\planning\\projects\\open-cohort-catalog\\PLAN.md",
+    "C:\\code\\hee-lee-oss\\planning\\ROADMAP.md",
+    "C:\\code\\hee-lee-oss\\packages\\schema\\src\\schemas.ts",
     "NIH Genomic Data Sharing Policy; NCI Genomic Data Commons access tiers",
     "SPDX license list; OncoTree / NCIt / ICD-O-3 vocabularies; schema.org/Dataset; DCAT"
   ],

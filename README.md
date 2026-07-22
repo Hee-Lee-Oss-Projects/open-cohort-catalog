@@ -6,7 +6,7 @@ Cancer research generates an enormous, growing body of **open** data — gene-ex
 
 **Definition of shipped:** license + PII), fully source-cited (completeness ≥ 90/100), schema-valid, CI-green, reviewer-approved, published in the catalog, AND demonstrably usable by a beneficiary** — i.e. the catalog (or the record) is adopted/queried/cited by a named third party, with the Steward's outco
 
-This is an **Elyos** good-deed project. Contributors pull a task, do it with their own coding agent, and open a PR. Platform: https://github.com/jdev1977/elyos
+This is an **Hee-Lee Oss** good-deed project. Contributors pull a task, do it with their own coding agent, and open a PR. Platform: https://github.com/jdev1977/hee-lee-oss
 
 ## Plan
 - [PLAN.md](./PLAN.md) — robust enterprise plan (vision, architecture, roadmap, risks; includes an applied-improvements appendix + review sign-off)
@@ -15,8 +15,8 @@ This is an **Elyos** good-deed project. Contributors pull a task, do it with the
 
 ## Contribute
 ```bash
-elyos browse
-elyos next --repo Elyos-Projects/open-cohort-catalog --no-fork
+hee-lee-oss browse
+hee-lee-oss next --repo Hee-Lee-Oss-Projects/open-cohort-catalog --no-fork
 ```
 
 ## Licensing & review
