@@ -6,7 +6,7 @@ Cancer research generates an enormous, growing body of **open** data — gene-ex
 
 **Definition of shipped:** license + PII), fully source-cited (completeness ≥ 90/100), schema-valid, CI-green, reviewer-approved, published in the catalog, AND demonstrably usable by a beneficiary** — i.e. the catalog (or the record) is adopted/queried/cited by a named third party, with the Steward's outco
 
-This is an **Hee-Lee Oss** good-deed project. Contributors pull a task, do it with their own coding agent, and open a PR. Platform: https://github.com/jdev1977/hee-lee-oss
+This is a **Hee-Lee Oss** good-deed project. Contributors pull a task, do it with their own coding agent, and open a PR. Get started: https://github.com/Hee-Lee-Oss-Projects/hee-lee-oss-downloads
 
 ## Plan
 - [PLAN.md](./PLAN.md) — robust enterprise plan (vision, architecture, roadmap, risks; includes an applied-improvements appendix + review sign-off)
